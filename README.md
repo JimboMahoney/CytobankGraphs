@@ -6,7 +6,6 @@ I wanted a simple way of getting an overview of every parameter. This could be f
 
 
 
-In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2) using the install.packages("packagename") command, which is not included in the script.
 
 e.g.
 
@@ -17,6 +16,9 @@ e.g.
  - [R](https://cran.r-project.org/) 
  - An interface such as [RStudio](https://www.rstudio.com/) 
  - some flow or mass FCS data!
+ 
+ 
+In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2) using the install.packages("packagename") command, which is not included in the script.
 
 <b>This script will:</b>
 
