@@ -1,6 +1,11 @@
 # CytobankGraphs
 This is a beginner's (both to mass cytometry and R) attempt to recreate the plots like Cytobank.
 
+e.g.
+
+<img src="https://raw.githubusercontent.com/JimboMahoney/CytobankGraphs/master/Plot.png"
+  align="center" />
+
 I wanted a simple way of getting an overview of every parameter. This could be from a CyTOF machine, like the Helios I'm using here, or a flow machine.
 
 This script will:
