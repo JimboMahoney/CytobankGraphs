@@ -41,7 +41,8 @@ The following links were incredibly useful for getting the code up and running:
 
 <b>Improvements / things to do:</b>
 
-The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.
+- The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.
+- The markers aren't getting imported for some reason (from Helios / CyTOF data). Only the parameter names are visible. They appear when plotted in e.g. FCS Express, so they must be in the FCS file?
 
 Feedback / suggestions would be appreciated.
 
