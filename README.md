@@ -1,14 +1,24 @@
 # CytobankGraphs
+
 This is a beginner's (both to mass cytometry and R) attempt to recreate the plots like [Cytobank.](https://www.cytobank.org)
+
+I wanted a simple way of getting an overview of every parameter. This could be from a CyTOF machine, like the Helios I'm using here, or a flow machine.
+
+
+
+In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2) using the install.packages("packagename") command, which is not included in the script.
 
 e.g.
 
 <img src="https://raw.githubusercontent.com/JimboMahoney/CytobankGraphs/master/Plot.png"
   align="center" />
 
-I wanted a simple way of getting an overview of every parameter. This could be from a CyTOF machine, like the Helios I'm using here, or a flow machine.
+<b>Requirements:</b>
+ - [R](https://cran.r-project.org/) 
+ - An interface such as [RStudio](https://www.rstudio.com/) 
+ - some flow or mass FCS data!
 
-This script will:
+<b>This script will:</b>
 
 1) Read in a specified FCS file
 2) Optionally transform the data using a data-specific arcsinh
@@ -17,9 +27,21 @@ This script will:
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
-Improvements / things to do:
+<b> How I learned to do this: </b>
+
+I'm totally new to programming in R and very new to flow / mass cytometry.
+
+The following links were incredibly useful for getting the code up and running:
+
+- A very simple [script](http://rforbiochemists.blogspot.com/2015/07/opening-and-plotting-some-flow.html) to import some FCS data and plot it
+- An incredibly complex CyTOF [workflow](https://www.bioconductor.org/help/course-materials/2017/BioC2017/Day2/Workshops/CyTOF/doc/cytofWorkflow_BioC2017workshop.html) with some snippets I could understand and implement
+- A <b>lot</b> of [this!](https://www.google.com/)
+
+<b>Improvements / things to do:</b>
 
 The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.
+
+Feedback / suggestions would be appreciated.
 
 
 
