@@ -10,6 +10,8 @@ This script will:
 3) Subsample down to a user-specified number or proportion of events
 4) Plot every parameter using a similar graphically representation and palette as cytobank
 
+Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
+
 Improvements / things to do:
 
 The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.
