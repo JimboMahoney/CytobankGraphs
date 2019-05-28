@@ -20,10 +20,10 @@ e.g.
 
 <b>This script will:</b>
 
-1) Read in a specified FCS file
-2) Optionally transform the data using a data-specific arcsinh
-3) Subsample down to a user-specified number or proportion of events
-4) Plot every parameter using a similar graphically representation and palette as cytobank
+1) Read in a specified FCS file.
+2) Optionally transform the data using a data-specific arcsinh (you'll need to look at the code and remove the comments).
+3) Subsample down to a user-specified number or proportion of events (again, take a look at the code and modify it as needed).
+4) Plot every parameter using a similar graphically representation and palette as cytobank.
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
