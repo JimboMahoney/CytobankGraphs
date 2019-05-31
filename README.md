@@ -18,14 +18,15 @@ e.g.
  - some flow or mass FCS data!
  
  
-In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2) using the install.packages("packagename") command, which is not included in the script.
+In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2, svdialogs) using the install.packages("packagename") command, which is not included in the script.
 
 <b>This script will:</b>
 
-1) Read in a specified FCS file.
+1) Read in a specified FCS file opened with a dialogue window.
 2) Optionally transform the data using a data-specific arcsinh (you'll need to look at the code and remove the comments).
 3) Subsample down to a user-specified number or proportion of events (again, take a look at the code and modify it as needed).
 4) Plot every parameter using a similar graphically representation and palette as cytobank.
+5) If the file is from a CyTOF machine, give a summary of the number of cell events and the acquisition rate.
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
@@ -45,7 +46,7 @@ The following links were incredibly useful for getting the code up and running:
 - ~~The markers aren't getting imported for some reason (from Helios / CyTOF data). Only the parameter names are visible. They appear when plotted in e.g. FCS Express, so they must be in the FCS file?~~ FIXED in latest upload.
 - ~~Uncertainty over the units of time and whether they differ between CyTOF and flow (BD) machines.~~ UPDATE - I think the calcs are correct. They are for CyTOF anyway.
 
-Feedback / suggestions would be appreciated.
+Feedback / suggestions appreciated.
 
 
 
