@@ -1,11 +1,12 @@
 # Data Import
 # Specify the data directory here:
 setwd("C:/Users/3054270/Documents/Machines/Helios/Ricardo")
+#setwd("C:/Users/Jimbo/OneDrive/Documents/R Datasets")
 
 library(flowCore)
 
 # this read.FCS() function imports the flow data:
-raw_fcs<-read.FCS("Lung_HH_01.fcs", alter.names = TRUE)
+raw_fcs<-read.FCS("Spleen_HH_03.fcs", alter.names = TRUE)
 
 
 # Preparation work for arcsinh transform
@@ -40,6 +41,11 @@ FCSDATA <- as.data.frame(exprs(raw_fcs))
 params<-parameters(raw_fcs)[["desc"]]
 # Replace parameters with descriptions, keeping things like Time, Event Length unchanged
 colnames(FCSDATA)[!is.na(params)] <- na.omit(params)
+
+## Optionally remove Event_Length & Gaussian Parameters
+removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual")
+FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
+
 
 #Subsample using random 10% of original rows
 #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
@@ -87,13 +93,17 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   scale_fill_gradientn(colours=colfunc(128)) + 
   # Contour lines if desired
   # geom_density2d(colour="black", bins=3)  +  
-  # Repeat for all parameters and allow each to be on their own Y axis scale
+  # Repeat for all parameters...
+  facet_wrap("parameter") +
+  # ...and allow each to be on their own Y axis scale
   # Note that free scales increases the processing time substantially
-  facet_wrap("parameter", scales="free") +
+  #facet_wrap(scales="free")+
   # Force Y axis to start at zero
   ylim(0,NA) +
   # And scale y to log, displaying numbers rather than notation
   scale_y_log10(labels=scales::comma) + 
+  # Zoom plot to only the values of interest
+  coord_cartesian(ylim=c(1, max(fcsmelted$intensity)))+
   # Hide Y axis values if desired
   #theme(axis.text.y = element_blank(), axis.ticks = element_blank()) +
   # Hide legend
@@ -102,3 +112,5 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   ylab(NULL) +
   # Change X axis label
   xlab("Time (min)")
+
+
