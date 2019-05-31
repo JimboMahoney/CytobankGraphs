@@ -1,12 +1,27 @@
-# Data Import
-# Specify the data directory here:
-setwd("C:/Users/3054270/Documents/Machines/Helios/Ricardo")
-#setwd("C:/Users/Jimbo/OneDrive/Documents/R Datasets")
+# Data Import from file chosen by user
+
+library(svDialogs)
+# Get user input for file
+testfile<-dlg_open()
+# Convert to string value
+testfile <- capture.output(testfile)[7]
+if ((testfile)=="character(0)"){
+  stop("File input cancelled")
+}else{
+#Remove invalid characters
+testfile <- gsub("[\"]","",testfile)
+testfile<-substring (testfile,5)
+
+filename <- basename (testfile)
+dir <- dirname (testfile)
+
+# Set working directory accoding to file chosen
+setwd(dir)
 
 library(flowCore)
 
 # this read.FCS() function imports the flow data:
-raw_fcs<-read.FCS("Spleen_HH_03.fcs", alter.names = TRUE)
+raw_fcs<-read.FCS(filename, alter.names = TRUE)
 
 
 # Preparation work for arcsinh transform
@@ -42,9 +57,20 @@ params<-parameters(raw_fcs)[["desc"]]
 # Replace parameters with descriptions, keeping things like Time, Event Length unchanged
 colnames(FCSDATA)[!is.na(params)] <- na.omit(params)
 
-## Optionally remove Event_Length & Gaussian Parameters
+## Optionally remove Time, Event_Length & Gaussian Parameters
 removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual")
 FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
+
+
+
+# Get number of cell events (based on "193Ir)
+cellevents<-as.data.frame(apply(FCSDATA, 2, function(c)sum(c!=0)))
+colnames(cellevents) <-c("Events")
+# Need to add one to the position because of the Time row
+irpos<-grep("193Ir",na.omit(params))+1
+cellevents<-cellevents$Events[irpos])
+kcellevents <-round(cellevents/1000,0)
+
 
 
 #Subsample using random 10% of original rows
@@ -77,7 +103,9 @@ div = (60*1000)
 
 # For rounding time to a nice number on the x axis graphs
 maxtime<-round(max(fcsmelted$Time)/div)
-max(fcsmelted$Time)
+
+# Now that we have the total time, we can estimate the number of cell events/sec
+eventspersec <- round(cellevents/maxtime/60,0)
 
 
 ## Plot x as Time and Y as intensity
@@ -111,6 +139,14 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   # Hide Y axis label
   ylab(NULL) +
   # Change X axis label
-  xlab("Time (min)")
+  xlab("Time (min)")+
+  ggtitle(filename)
 
+}
 
+if(length(cellevents)==0){
+  stop("No cell events detected - file may not be CyTOF?")
+}else{
+message <- paste(kcellevents,"thousand cell events","and",eventspersec,"events/sec")
+dlg_message(message)
+}
