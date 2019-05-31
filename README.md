@@ -43,7 +43,7 @@ The following links were incredibly useful for getting the code up and running:
 
 - ~~The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.~~ PARTIALLY FIXED in latest upload.
 - ~~The markers aren't getting imported for some reason (from Helios / CyTOF data). Only the parameter names are visible. They appear when plotted in e.g. FCS Express, so they must be in the FCS file?~~ FIXED in latest upload.
-- Uncertainty over the units of time and whether they differ between CyTOF and flow (BD) machines.
+- ~~Uncertainty over the units of time and whether they differ between CyTOF and flow (BD) machines.~~ UPDATE - I think the calcs are correct. They are for CyTOF anyway.
 
 Feedback / suggestions would be appreciated.
 
