@@ -27,6 +27,7 @@ In addition, you will need to [install the relevant packages](https://www.dataca
 3) Subsample down to a user-specified number or proportion of events (again, take a look at the code and modify it as needed).
 4) Plot every parameter using a similar graphically representation and palette as cytobank.
 5) If the file is from a CyTOF machine, give a summary of the number of cell events and the acquisition rate.
+6) Give the mean intensity as an overlay on each plot.
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
@@ -44,7 +45,7 @@ The following links were incredibly useful for getting the code up and running:
 
 - ~~The graphical representation isn't perfect. I need to figure out a way of making the plots more "dense" and / or having the density overlay better defined.~~ PARTIALLY FIXED in latest upload.
 - ~~The markers aren't getting imported for some reason (from Helios / CyTOF data). Only the parameter names are visible. They appear when plotted in e.g. FCS Express, so they must be in the FCS file?~~ FIXED in latest upload.
-- ~~Uncertainty over the units of time and whether they differ between CyTOF and flow (BD) machines.~~ UPDATE - I think the calcs are correct. They are for CyTOF anyway.
+- ~~Uncertainty over the units of time and whether they differ between CyTOF and flow (BD) machines.~~ UPDATE - Units of time are now correct for both flow and CyTOF. Tested with BD Aria and Helios.
 
 Feedback / suggestions appreciated.
 
