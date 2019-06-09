@@ -5,13 +5,16 @@ library(svDialogs)
 testfile<-dlg_open()
 # Convert to string value
 testfile <- capture.output(testfile)[7]
-if ((testfile)=="character(0)"){
-  stop("File input cancelled")
-}else{
-#Remove invalid characters
+{
+
+if ((testfile)=="character(0)")
+stop("File input cancelled")
+
+#Remove invalid characters from file input location
 testfile <- gsub("[\"]","",testfile)
 testfile<-substring (testfile,5)
 
+#Set file and directory
 filename <- basename (testfile)
 dir <- dirname (testfile)
 
@@ -50,35 +53,62 @@ FCSDATA <- as.data.frame(exprs(raw_fcs))
 
 
 
-#Remove unnecessary parameter text - superseded by next function
-#names(FCSDATA)[-1] <- sub("Di", "", names(FCSDATA)[-1])
-# Create list of descriptions 
+#Remove unnecessary parameter text
+names(FCSDATA)[-1] <- sub("Di", "", names(FCSDATA)[-1])
+# Create list of channel / parameter descriptions 
 params<-parameters(raw_fcs)[["desc"]]
 # Replace parameters with descriptions, keeping things like Time, Event Length unchanged
 colnames(FCSDATA)[!is.na(params)] <- na.omit(params)
-
-## Optionally remove Time, Event_Length & Gaussian Parameters
-removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual")
+## Remove Time, Event_Length & Gaussian Parameters
+removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual", "Cell_length")
 FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
 
+# Determine whether data is CyTOF or Flow by presence of FSC
+# isflow will be 0 for a CyTOF or greater than 1 if flow
+isflow <-sum(grep("FSC",colnames(FCSDATA)))
+
+## Remove FSC and SSC
+library(tidyverse) 
+FCSDATA <- FCSDATA %>% select(-contains("FSC"))
+FCSDATA <- FCSDATA %>% select(-contains("SSC"))
 
 
-# Get number of cell events (based on "193Ir)
+
+# Get number of cell events (based on "193" - i.e. Iridium)
+if(isflow==0){
 cellevents<-as.data.frame(apply(FCSDATA, 2, function(c)sum(c!=0)))
 colnames(cellevents) <-c("Events")
-# Need to add one to the position because of the Time row
-irpos<-grep("193Ir",na.omit(params))+1
-cellevents<-cellevents$Events[irpos])
+# Note that this only works correctly because "Time" has been removed by a previous step - otherwise the position would be wrong.
+irpos<-grep("193",columns)
+cellevents<-cellevents$Events[irpos]
 kcellevents <-round(cellevents/1000,0)
+}
 
 
+#For converting FCS time to mins - flow uses 10ms units, CyTOF uses ms
+if(isflow>0){
+  div = (60*100)
+}else{
+  div = (60*1000)
+}
 
-#Subsample using random 10% of original rows
+# Find total acquisition time
+maxtime<-round(max(FCSDATA$Time)/div,1)
+
+# Now that we have the total time, we can calculate the number of cell events/sec
+if(isflow==0){
+  eventspersec <- round(cellevents/maxtime/60,0)
+}
+
+#Subsample if greater than 10,000
+if (nrow(FCSDATA)>10000){
+#using random 10% of original rows
 #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
 #OR
 #Subsample using a number of random rows, where the number is defined by numrows
-numrows <- 1000
+numrows <- 10000
 FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
+}
 
 # Melt the data into a continuous table, keeping Time for all values.
 # This allows plotting all parameters using facet_wrap in the next section
@@ -86,6 +116,20 @@ library(reshape2)
 fcsmelted <- melt(FCSDATA, id.var="Time", value.name = "intensity", variable.name="parameter")
 
 
+# Create number formatted list of intensity values
+Meanintensitylist=c(format(c(round(colMeans(FCSDATA)),1),big.mark = ",",trim=TRUE))
+# Remove the last row that is added by format
+Meanintensitylist<-Meanintensitylist[-length(Meanintensitylist)]
+# Create data frame for labels to print mean intensity on plots
+datalabels <- data.frame(
+  Meanintensity=c(Meanintensitylist),
+  parameter = c(colnames(FCSDATA))
+)
+
+
+
+# Remove Time from labels
+datalabels <- datalabels[!(rownames(datalabels) %in% "Time"),]
 
 #use ggplot2 to draw dot plot
 library(ggplot2)
@@ -98,14 +142,6 @@ colfunc <- colorRampPalette(c("black", "black","black", "black", "black", "black
                               "red", "yellow"))
 
 
-#For converting time to mins on graph
-div = (60*1000)
-
-# For rounding time to a nice number on the x axis graphs
-maxtime<-round(max(fcsmelted$Time)/div)
-
-# Now that we have the total time, we can estimate the number of cell events/sec
-eventspersec <- round(cellevents/maxtime/60,0)
 
 
 ## Plot x as Time and Y as intensity
@@ -140,13 +176,22 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   ylab(NULL) +
   # Change X axis label
   xlab("Time (min)")+
-  ggtitle(filename)
+  ggtitle(filename) +
+  # Add mean intensity values from previously calculated data table
+  geom_text(data=datalabels,
+            colour="White",
+            fontface="bold",
+            mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,label=Meanintensity))
+
 
 }
-
-if(length(cellevents)==0){
-  stop("No cell events detected - file may not be CyTOF?")
-}else{
-message <- paste(kcellevents,"thousand cell events","and",eventspersec,"events/sec")
-dlg_message(message)
+if ((testfile)!="character(0)"){
+if (isflow==0){
+  if(length(cellevents)==0){
+    stop("No cell events detected")
+  }else{
+  message <- paste(kcellevents,"thousand cell events","and",eventspersec,"events/sec")
+  dlg_message(message)
+  }
+}
 }
