@@ -34,6 +34,11 @@ columns<-colnames(raw_fcs)
 columns<-setdiff(columns,"Time")
 # Remove "Cell_Length" column to avoid it being transformed
 columns<-setdiff(columns,"Event_length")
+columns<-setdiff(columns,"Cell_length")
+## Remove FSC and SSC
+removefscssc<-grep("FSC|SSC",columns,value=TRUE)
+columns<-columns[! columns %in% removefscssc]
+
 
 
 # Read data into a data frame
@@ -55,6 +60,7 @@ FCSDATA <- as.data.frame(exprs(raw_fcs))
 
 #Remove unnecessary parameter text
 names(FCSDATA)[-1] <- sub("Di", "", names(FCSDATA)[-1])
+names(FCSDATA)[-1] <- sub("Dd", "", names(FCSDATA)[-1])
 # Create list of channel / parameter descriptions 
 params<-parameters(raw_fcs)[["desc"]]
 # Replace parameters with descriptions, keeping things like Time, Event Length unchanged
@@ -76,12 +82,12 @@ FCSDATA <- FCSDATA %>% select(-contains("SSC"))
 
 # Get number of cell events (based on "193" - i.e. Iridium)
 if(isflow==0){
-cellevents<-as.data.frame(apply(FCSDATA, 2, function(c)sum(c!=0)))
-colnames(cellevents) <-c("Events")
-# Note that this only works correctly because "Time" has been removed by a previous step - otherwise the position would be wrong.
-irpos<-grep("193",columns)
-cellevents<-cellevents$Events[irpos]
-kcellevents <-round(cellevents/1000,0)
+  cellevents<-as.data.frame(apply(FCSDATA, 2, function(c)sum(c!=0)))
+  colnames(cellevents) <-c("Events")
+  # Note that this only works correctly because "Time" has been removed by a previous step - otherwise the position would be wrong.
+  irpos<-grep("193",columns)
+  cellevents<-cellevents$Events[irpos]
+  kcellevents <-round(cellevents/1000,0)
 }
 
 
@@ -102,18 +108,13 @@ if(isflow==0){
 
 #Subsample if greater than 10,000
 if (nrow(FCSDATA)>10000){
-#using random 10% of original rows
-#FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
-#OR
-#Subsample using a number of random rows, where the number is defined by numrows
-numrows <- 10000
-FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
+  #using random 10% of original rows
+  #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
+  #OR
+  #Subsample using a number of random rows, where the number is defined by numrows
+  numrows <- 10000
+  FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
 }
-
-# Melt the data into a continuous table, keeping Time for all values.
-# This allows plotting all parameters using facet_wrap in the next section
-library(reshape2)
-fcsmelted <- melt(FCSDATA, id.var="Time", value.name = "intensity", variable.name="parameter")
 
 
 # Create number formatted list of intensity values
@@ -126,10 +127,61 @@ datalabels <- data.frame(
   parameter = c(colnames(FCSDATA))
 )
 
+# Add a blank to the columns list to match its length to that of FCSDATA (i.e. the time row)
+columns<-columns<-append(columns,"Time",after=0)
+# Add back the original marker names
+datalabels[,"OrigMarkers"]<-columns
+# Remove Di / Dd
+datalabels$OrigMarkers <- sub("Di", "", datalabels$OrigMarkers)
+datalabels$OrigMarkers <- sub("Dd", "", datalabels$OrigMarkers)
+
+# This is needed for flow data to ensure we don't mess with the parameter names
+if (identical(as.character(datalabels$parameter),datalabels[['OrigMarkers']])==FALSE){
+
+  # Remove other symbols
+  datalabels$OrigMarkers <- gsub("[[:punct:]]", "", datalabels$OrigMarkers)
+  
+  # Create a function to extract the last n characters from a string
+  substrRight <- function(x, n){
+    substr(x, nchar(x)-n+1, nchar(x))
+  }
+  # Extract only last 5 characters (i.e the element and mass) - this is clumsy and doesn't work well for flow data, which may have longer names for markers
+  # But I can't figure out a way to remove duplicate text
+  datalabels$OrigMarkers<-substrRight(datalabels$OrigMarkers,5)
+  
+  # Compare columns and keep only original markers if they are different
+  datalabels$OrigMarkers<-ifelse(datalabels$parameter==datalabels$OrigMarkers,"",paste("/",datalabels$OrigMarkers))
+  # Replace parameters column with orignal marker names / parameters
+  datalabels[,"parameter"]<-paste(datalabels$parameter,datalabels$OrigMarkers)
+} #End of flow data name comparison / CyTOF paramater rename loop
+
+# Remove the OrigMarkers column as it's no longer needed
+datalabels<-datalabels[,-3]
+
+
+# Make sure the FCSDATA matches the datalabels
+colnames(FCSDATA)<-datalabels$parameter
+
+#Trim the trailing whitespace added by paste
+colnames(FCSDATA)<-trimws(colnames(FCSDATA),"r")
+datalabels$parameter<-trimws(datalabels$parameter,"r")
 
 
 # Remove Time from labels
 datalabels <- datalabels[!(rownames(datalabels) %in% "Time"),]
+# Change rownames to numeric 
+rownames(datalabels) <- 1:nrow(datalabels)
+# Change parameters to factors to control facet order
+datalabels$parameter<-as.factor(datalabels$parameter)
+
+
+
+# Melt the data into a continuous table, keeping Time for all values.
+# This allows plotting all parameters using facet_wrap in the next section
+library(reshape2)
+fcsmelted <- melt(FCSDATA, id.var="Time", value.name = "intensity", variable.name="parameter")
+
+
 
 #use ggplot2 to draw dot plot
 library(ggplot2)
@@ -141,7 +193,7 @@ colfunc <- colorRampPalette(c("black", "black","black", "black", "black", "black
                               "purple4", "purple4", 
                               "red", "yellow"))
 
-
+  
 
 
 ## Plot x as Time and Y as intensity
@@ -178,10 +230,12 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   xlab("Time (min)")+
   ggtitle(filename) +
   # Add mean intensity values from previously calculated data table
-  geom_text(data=datalabels,
-            colour="White",
+  geom_label(data=datalabels,
+            colour="black",
             fontface="bold",
+            alpha=0.5,
             mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,label=Meanintensity))
+            
 
 
 }
@@ -193,5 +247,5 @@ if (isflow==0){
   message <- paste(kcellevents,"thousand cell events","and",eventspersec,"events/sec")
   dlg_message(message)
   }
-}
-}
+} # End of cellevents loop
+} # End of file cancel loop
