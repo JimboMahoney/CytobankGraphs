@@ -27,14 +27,18 @@ library(flowCore)
 raw_fcs<-read.FCS(filename, alter.names = TRUE)
 
 
-# Preparation work for arcsinh transform
+# Preparation work for arcsinh transform (columns is also used later for naming changes)
 # Create list of parameters
 columns<-colnames(raw_fcs)
 # Remove "Time" column to avoid it being transformed
 columns<-setdiff(columns,"Time")
-# Remove "Cell_Length" column to avoid it being transformed
+# Remove "Cell_Length" and Gaussians column to avoid it being transformed
 columns<-setdiff(columns,"Event_length")
 columns<-setdiff(columns,"Cell_length")
+columns<-setdiff(columns,"Center")
+columns<-setdiff(columns,"Offset")
+columns<-setdiff(columns,"Width")
+columns<-setdiff(columns,"Residual")
 ## Remove FSC and SSC
 removefscssc<-grep("FSC|SSC",columns,value=TRUE)
 columns<-columns[! columns %in% removefscssc]
@@ -99,7 +103,7 @@ if(isflow>0){
 }
 
 # Find total acquisition time
-maxtime<-round(max(FCSDATA$Time)/div,1)
+maxtime<-round(max(FCSDATA$Time)/div,2)
 
 # Now that we have the total time, we can calculate the number of cell events/sec
 if(isflow==0){
@@ -117,14 +121,17 @@ if (nrow(FCSDATA)>10000){
 }
 
 
-# Create number formatted list of intensity values
-Meanintensitylist=c(format(c(round(colMeans(FCSDATA)),1),big.mark = ",",trim=TRUE))
+# Create number formatted list of intensity values and event counts
+Meanintensitylist <- c(format(c(round(colMeans(FCSDATA)),1),big.mark = ",",trim=TRUE))
+EventSecList <- c(format(c(round((colSums(FCSDATA !=0)/(maxtime*60)),1),trim=TRUE)))
 # Remove the last row that is added by format
 Meanintensitylist<-Meanintensitylist[-length(Meanintensitylist)]
+EventSecList<-EventSecList[-length(EventSecList)]
 # Create data frame for labels to print mean intensity on plots
 datalabels <- data.frame(
   Meanintensity=c(Meanintensitylist),
-  parameter = c(colnames(FCSDATA))
+  parameter = c(colnames(FCSDATA)),
+  EventsPerSec = c(EventSecList)
 )
 
 # Add a blank to the columns list to match its length to that of FCSDATA (i.e. the time row)
@@ -156,7 +163,7 @@ if (identical(as.character(datalabels$parameter),datalabels[['OrigMarkers']])==F
 } #End of flow data name comparison / CyTOF paramater rename loop
 
 # Remove the OrigMarkers column as it's no longer needed
-datalabels<-datalabels[,-3]
+datalabels<-datalabels[,-4]
 
 
 # Make sure the FCSDATA matches the datalabels
@@ -234,7 +241,8 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
             colour="black",
             fontface="bold",
             alpha=0.5,
-            mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,label=Meanintensity))
+            mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,
+                        label=paste("Mean DC =",Meanintensity,", Events/sec =",EventsPerSec)))
             
 
 
