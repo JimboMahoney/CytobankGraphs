@@ -110,20 +110,10 @@ if(isflow==0){
   eventspersec <- round(cellevents/maxtime/60,0)
 }
 
-#Subsample if greater than 10,000
-if (nrow(FCSDATA)>10000){
-  #using random 10% of original rows
-  #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
-  #OR
-  #Subsample using a number of random rows, where the number is defined by numrows
-  numrows <- 10000
-  FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
-}
-
 
 # Create number formatted list of intensity values and event counts
 Meanintensitylist <- c(format(c(round(colMeans(FCSDATA)),1),big.mark = ",",trim=TRUE))
-EventSecList <- c(format(c(round((colSums(FCSDATA !=0)/(maxtime*60)),1),trim=TRUE)))
+EventSecList <- c(format(c(round((colSums(FCSDATA !=0)/(maxtime*60)),0),trim=TRUE)))
 # Remove the last row that is added by format
 Meanintensitylist<-Meanintensitylist[-length(Meanintensitylist)]
 EventSecList<-EventSecList[-length(EventSecList)]
@@ -133,6 +123,21 @@ datalabels <- data.frame(
   parameter = c(colnames(FCSDATA)),
   EventsPerSec = c(EventSecList)
 )
+
+
+#Calculate size of dataset
+DataSizeM <- (ncol(FCSDATA)*nrow(FCSDATA))/1000000
+#Subsample if greater than 10,000
+if (DataSizeM>2.5){
+  #using random 10% of original rows
+  #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
+  #OR
+  #Subsample using a number of random rows, where the number is defined by numrows
+  numrows <- 5000
+  FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
+}
+
+
 
 # Add a blank to the columns list to match its length to that of FCSDATA (i.e. the time row)
 columns<-columns<-append(columns,"Time",after=0)
@@ -200,8 +205,6 @@ colfunc <- colorRampPalette(c("black", "black","black", "black", "black", "black
                               "purple4", "purple4", 
                               "red", "yellow"))
 
-  
-
 
 ## Plot x as Time and Y as intensity
 ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
@@ -240,13 +243,15 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   geom_label(data=datalabels,
             colour="black",
             fontface="bold",
+            size=3,
             alpha=0.5,
             mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,
-                        label=paste("Mean DC =",Meanintensity,", Events/sec =",EventsPerSec)))
+                        label=paste("Mean =",Meanintensity,", Events/sec =",EventsPerSec)))
             
 
 
 }
+# Create a pop-up with the cell (Ir) Events and rate.
 if ((testfile)!="character(0)"){
 if (isflow==0){
   if(length(cellevents)==0){
