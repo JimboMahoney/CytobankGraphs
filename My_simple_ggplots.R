@@ -69,13 +69,17 @@ names(FCSDATA)[-1] <- sub("Dd", "", names(FCSDATA)[-1])
 params<-parameters(raw_fcs)[["desc"]]
 # Replace parameters with descriptions, keeping things like Time, Event Length unchanged
 colnames(FCSDATA)[!is.na(params)] <- na.omit(params)
-## Remove Time, Event_Length & Gaussian Parameters
-removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual", "Cell_length")
-FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
 
 # Determine whether data is CyTOF or Flow by presence of FSC
 # isflow will be 0 for a CyTOF or greater than 1 if flow
 isflow <-sum(grep("FSC",colnames(FCSDATA)))
+# Determine whether data is pre CyTOF 3 (Helios) by presence of "Cell_length", rather than "Event_length"
+isCyTOF2 <-sum(grep("Cell_length",colnames(FCSDATA)))
+
+## Remove Time, Event_Length & Gaussian Parameters
+removecolumns <- c("Event_length", "Center", "Offset", "Width", "Residual", "Cell_length")
+FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
+
 
 ## Remove FSC and SSC
 library(tidyverse) 
@@ -103,7 +107,7 @@ if(isflow>0){
 }
 
 # Find total acquisition time
-maxtime<-round(max(FCSDATA$Time)/div,2)
+maxtime<-round(max(FCSDATA$Time)/div,1)
 
 # Now that we have the total time, we can calculate the number of cell events/sec
 if(isflow==0){
@@ -147,8 +151,8 @@ datalabels[,"OrigMarkers"]<-columns
 datalabels$OrigMarkers <- sub("Di", "", datalabels$OrigMarkers)
 datalabels$OrigMarkers <- sub("Dd", "", datalabels$OrigMarkers)
 
-# This is needed for flow data to ensure we don't mess with the parameter names
-if (identical(as.character(datalabels$parameter),datalabels[['OrigMarkers']])==FALSE){
+# This is needed for pre-Helios data to ensure we don't mess with the parameter names
+if (isCyTOF2>1){
 
   # Remove other symbols
   datalabels$OrigMarkers <- gsub("[[:punct:]]", "", datalabels$OrigMarkers)
@@ -250,15 +254,14 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
             
 
 
-}
+} # End of file cancel loop
+
 # Create a pop-up with the cell (Ir) Events and rate.
-if ((testfile)!="character(0)"){
-if (isflow==0){
-  if(length(cellevents)==0){
+if ((testfile)=="character(0)" || isflow>0 || length(cellevents)==0){
     stop("No cell events detected")
   }else{
   message <- paste(kcellevents,"thousand cell events","and",eventspersec,"events/sec")
   dlg_message(message)
   }
-} # End of cellevents loop
-} # End of file cancel loop
+
+
