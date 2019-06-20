@@ -18,7 +18,7 @@ e.g.
  - some flow or mass FCS data!
  
  
-In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2 and ggplot2, svdialogs) using the install.packages("packagename") command, which is not included in the script.
+In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2, tidyverse, ggplot2, svdialogs) using the install.packages("packagename") command, which is not included in the script.
 
 <b>This script will:</b>
 
