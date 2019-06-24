@@ -23,7 +23,7 @@ In addition, you will need to [install the relevant packages](https://www.dataca
 <b>This script will:</b>
 
 1) Read in a specified FCS file opened with a dialogue window.
-2) Optionally transform the data using a data-specific arcsinh (you'll need to look at the code and remove the comments).
+2) Optionally transform the data using a data-specific logicle (you'll need to look at the code and remove the comments).
 3) Subsample down to 5,000 events if the dataset is large (or a user-specified number or proportion of events). Again, take a look at the code and modify it as needed.
 4) Plot every parameter using a similar graphically representation and palette as cytobank.
 5) If the file is from a CyTOF machine, give a summary of the number of cell events and the acquisition rate.
