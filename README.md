@@ -18,7 +18,7 @@ e.g.
  - some flow or mass FCS data!
  
  
-In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2, tidyverse, ggplot2, svdialogs) using the install.packages("packagename") command, which is not included in the script.
+~~In addition, you will need to [install the relevant packages](https://www.datacamp.com/community/tutorials/r-packages-guide) (FlowCore, reshape2, tidyverse, ggplot2, svdialogs) using the install.packages("packagename") command, which is not included in the script.~~ UPDATED - Latest version includes all the code needed to check if the packages are present and install them if not.
 
 <b>This script will:</b>
 
@@ -27,7 +27,7 @@ In addition, you will need to [install the relevant packages](https://www.dataca
 3) Subsample down to 5,000 events if the dataset is large (or a user-specified number or proportion of events). Again, take a look at the code and modify it as needed.
 4) Plot every parameter using a similar graphically representation and palette as cytobank.
 5) If the file is from a CyTOF machine, give a summary of the number of cell events and the acquisition rate.
-6) Give the mean intensity and event/sec as an overlay on each plot.
+6) Give the mean and median intensity and event/sec as an overlay on each plot.
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
