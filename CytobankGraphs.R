@@ -1,6 +1,38 @@
+#########################################################
+### Installing and loading required packages
+#########################################################
+
+if (!require("svDialogs")) {
+  install.packages("svDialogs", dependencies = TRUE)
+  library(svDialogs)
+}
+
+if (!require("flowCore")) {
+  if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+  
+  BiocManager::install("flowCore")
+}
+
+if (!require("tidyverse")) {
+  install.packages("tidyverse", dependencies = TRUE)
+  library(tidyverse)
+}
+
+if (!require("reshape2")) {
+  install.packages("reshape2", dependencies = TRUE)
+  library(reshape2)
+}
+
+if (!require("ggplot2")) {
+  install.packages("ggplot2", dependencies = TRUE)
+  library(ggplot2)
+}
+
+
 # Data Import from file chosen by user
 
-library(svDialogs)
+#library(svDialogs) # Moved to top 
 # Get user input for file
 testfile<-dlg_open()
 # Convert to string value
@@ -21,7 +53,7 @@ dir <- dirname (testfile)
 # Set working directory accoding to file chosen
 setwd(dir)
 
-library(flowCore)
+#library(flowCore) #Moved to top
 
 # this read.FCS() function imports the flow data:
 raw_fcs<-read.FCS(filename, alter.names = TRUE)
@@ -50,7 +82,7 @@ FCSDATA <- as.data.frame(exprs(raw_fcs))
 
 ############ Optional Data Transform section
 
-#Remove comments from code lines to transform using asinh
+#Remove comments from code lines to transform using logicle
 ## Automatically estimate the logicle transformation based on the data
 #lgcl <- estimateLogicle(raw_fcs, channels = c(columns))
 ## transform  parameters using the estimated logicle transformation
@@ -82,7 +114,7 @@ FCSDATA <- FCSDATA[,!(names(FCSDATA) %in% removecolumns)]
 
 
 ## Remove FSC and SSC
-library(tidyverse) 
+# library(tidyverse) # Moved to top
 FCSDATA <- FCSDATA %>% select(-contains("FSC"))
 FCSDATA <- FCSDATA %>% select(-contains("SSC"))
 
@@ -116,14 +148,17 @@ if(isflow==0){
 
 
 # Create number formatted list of intensity values and event counts
+Medianintensitylist<-c(format(c(round(apply(FCSDATA,2,FUN=median)),1),big.mark=",",trim=TRUE))
 Meanintensitylist <- c(format(c(round(colMeans(FCSDATA)),1),big.mark = ",",trim=TRUE))
 EventSecList <- c(format(c(round((colSums(FCSDATA !=0)/(maxtime*60)),0),trim=TRUE)))
 # Remove the last row that is added by format
 Meanintensitylist<-Meanintensitylist[-length(Meanintensitylist)]
+Medianintensitylist<-Medianintensitylist[-length(Medianintensitylist)]
 EventSecList<-EventSecList[-length(EventSecList)]
 # Create data frame for labels to print mean intensity on plots
 datalabels <- data.frame(
   Meanintensity=c(Meanintensitylist),
+  Medianintensity=c(Medianintensitylist),
   parameter = c(colnames(FCSDATA)),
   EventsPerSec = c(EventSecList)
 )
@@ -131,7 +166,7 @@ datalabels <- data.frame(
 
 #Calculate size of dataset
 DataSizeM <- (ncol(FCSDATA)*nrow(FCSDATA))/1000000
-#Subsample if greater than 10,000
+#Subsample if dataset is large
 if (DataSizeM>2.5){
   #using random 10% of original rows
   #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
@@ -172,7 +207,7 @@ if (isCyTOF2>1){
 } #End of flow data name comparison / CyTOF paramater rename loop
 
 # Remove the OrigMarkers column as it's no longer needed
-datalabels<-datalabels[,-4]
+datalabels<-datalabels[,-5]
 
 
 # Make sure the FCSDATA matches the datalabels
@@ -194,13 +229,13 @@ datalabels$parameter<-as.factor(datalabels$parameter)
 
 # Melt the data into a continuous table, keeping Time for all values.
 # This allows plotting all parameters using facet_wrap in the next section
-library(reshape2)
+# library(reshape2) # Moved to op
 fcsmelted <- melt(FCSDATA, id.var="Time", value.name = "intensity", variable.name="parameter")
 
 
 
 #use ggplot2 to draw dot plot
-library(ggplot2)
+# library(ggplot2) # Moved to top
 
 
 # Create colour scale for plot
@@ -250,7 +285,7 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
             size=3,
             alpha=0.5,
             mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,
-                        label=paste("Mean =",Meanintensity,", Events/sec =",EventsPerSec)))
+                        label=paste("Mean =",Meanintensity,", Median =",Medianintensity,", Events/sec =",EventsPerSec)))
             
 
 
