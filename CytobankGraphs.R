@@ -29,6 +29,11 @@ if (!require("ggplot2")) {
   library(ggplot2)
 }
 
+if (!require("tcltk")) {
+  install.packages("tcltk", dependencies = TRUE)
+  library(tcltk)
+}
+
 
 # Data Import from file chosen by user
 
@@ -225,6 +230,42 @@ rownames(datalabels) <- 1:nrow(datalabels)
 # Change parameters to factors to control facet order
 datalabels$parameter<-as.factor(datalabels$parameter)
 
+
+
+
+# Ask user which parameters to plot
+markerlist<-tk_select.list(colnames(FCSDATA[-1]), multiple=TRUE,title="Select Markers to plot. Hit cancel to use all.") 
+
+# If user cancels dialog box, use all markers.
+if(length(markerlist)==0 ){
+  markerlist <- colnames(FCSDATA[-1])
+}
+
+# Create list of positions of the user-selected markers
+# V and $ and gsub are used to ensure grep only matches exact / full names
+marker_cols<-NULL  
+for (m in markerlist){
+  m <- paste ("^",m,"$")
+  m <- gsub("\\s","",m)
+  marker_cols<-c(marker_cols,grep(m,colnames(FCSDATA)))
+  
+}
+
+# Remove markers that are not selected but keep first column (time)
+
+FCSDATA <- FCSDATA[,c(1,marker_cols)]
+
+# Do the same for datalabels, which are stored in rows
+
+marker_rows<-NULL  
+for (m in markerlist){
+  m <- paste ("^",m,"$")
+  m <- gsub("\\s","",m)
+  marker_rows<-c(marker_rows,which(grepl(m,datalabels$parameter)))
+  
+}
+
+datalabels <- datalabels[marker_rows,]
 
 
 # Melt the data into a continuous table, keeping Time for all values.
