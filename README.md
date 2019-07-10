@@ -25,9 +25,10 @@ e.g.
 1) Read in a specified FCS file opened with a dialogue window.
 2) Optionally transform the data using a data-specific logicle (you'll need to look at the code and remove the comments).
 3) Subsample down to 5,000 events if the dataset is large (or a user-specified number or proportion of events). Again, take a look at the code and modify it as needed.
-4) Plot every parameter using a similar graphically representation and palette as cytobank.
+4) Ask the user which parameters to plot.
+5) Plot the chosen parameters using a similar graphically representation and palette as cytobank.
 5) If the file is from a CyTOF machine, give a summary of the number of cell events and the acquisition rate.
-6) Give the mean and median intensity and event/sec as an overlay on each plot.
+7) Give the mean and median intensity and event/sec as an overlay on each plot.
 
 Since the parameters can be numerous (e.g. I'm using a dataset with 62 parameters), it's best to use the "Zoom" function to view the output in fullscreen.
 
