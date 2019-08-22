@@ -50,7 +50,10 @@ The following links were incredibly useful for getting the code up and running:
 
 Feedback / suggestions appreciated.
 
-See also https://github.com/JimboMahoney/CytoBars
+<b>See also:</b>
+
+https://github.com/JimboMahoney/CytoBars
+https://github.com/JimboMahoney/CyTOF-PlotViewer
 
 
 
