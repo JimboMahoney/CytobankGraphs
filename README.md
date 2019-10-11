@@ -9,7 +9,7 @@ I wanted a simple way of getting an overview of every parameter. This could be f
 
 e.g.
 
-<img src="https://raw.githubusercontent.com/JimboMahoney/CytobankGraphs/master/Plot2.png"
+<img src="https://raw.githubusercontent.com/JimboMahoney/CytobankGraphs/master/Plot3.png"
   align="center" />
 
 <b>Requirements:</b>
