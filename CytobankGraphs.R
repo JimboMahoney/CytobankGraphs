@@ -10,8 +10,7 @@ if (!require("svDialogs")) {
 if (!require("flowCore")) {
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-  
-  BiocManager::install("flowCore")
+    BiocManager::install("flowCore")
 }
 
 if (!require("tidyverse")) {
@@ -34,6 +33,12 @@ if (!require("tcltk")) {
   library(tcltk)
 }
 
+#########################################################
+### Script starts here
+#########################################################
+
+# Clear environment
+rm(list = ls(all = TRUE))
 
 # Data Import from file chosen by user
 
@@ -170,16 +175,16 @@ datalabels <- data.frame(
 
 
 #Calculate size of dataset
-DataSizeM <- (ncol(FCSDATA)*nrow(FCSDATA))/1000000
+#DataSizeM <- (ncol(FCSDATA)*nrow(FCSDATA))/1000000
 #Subsample if dataset is large
-if (DataSizeM>2.5){
+#if (DataSizeM>3){
   #using random 10% of original rows
   #FCSDATA <- FCSDATA[sample(nrow(FCSDATA),nrow(FCSDATA)/10),]
   #OR
   #Subsample using a number of random rows, where the number is defined by numrows
-  numrows <- 5000
+  numrows <- 10000
   FCSDATA <- FCSDATA[sample(nrow(FCSDATA),numrows),]
-}
+#}
 
 
 
@@ -291,7 +296,7 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   # Only label 0 and max on X Axis
   scale_x_continuous(breaks=seq(0,maxtime,maxtime)) +
   # Plot all points
-  geom_point(shape=".")+
+  geom_point(shape=".",alpha=0.5)+
   # Fill with transparent colour fill using density stats 
   # ndensity scales each graph to its own min/max values
   stat_density2d(geom="raster", aes(fill=..ndensity.., alpha = ..ndensity..), contour = FALSE) +
@@ -305,9 +310,11 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   # Note that free scales increases the processing time substantially
   #facet_wrap(scales="free")+
   # Force Y axis to start at zero
-  ylim(0,NA) +
+  #ylim(0,NA) +
   # And scale y to log, displaying numbers rather than notation
-  scale_y_log10(labels=scales::comma) + 
+  #scale_y_log10(labels=scales::comma) + 
+  # Use scientific notation
+  scale_y_log10(labels=scales::trans_format('log10',scales::math_format(10^.x))) +
   # Zoom plot to only the values of interest
   coord_cartesian(ylim=c(1, max(fcsmelted$intensity)))+
   # Hide Y axis values if desired
@@ -323,7 +330,7 @@ ggplot(fcsmelted, aes(x=Time/div, y=intensity)) +
   geom_label(data=datalabels,
             colour="black",
             fontface="bold",
-            size=3,
+            size=2.5,
             alpha=0.5,
             mapping=aes(maxtime/2,(max(fcsmelted$intensity))/1000,
                         label=paste("Mean =",Meanintensity,", Median =",Medianintensity,", Events/sec =",EventsPerSec)))
