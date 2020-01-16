@@ -132,12 +132,10 @@ FCSDATA <- FCSDATA %>% select(-contains("SSC"))
 
 # Get number of cell events (based on "193" - i.e. Iridium)
 if(isflow==0){
-  cellevents<-as.data.frame(apply(FCSDATA, 2, function(c)sum(c!=0)))
-  colnames(cellevents) <-c("Events")
   # Note that this only works correctly because "Time" has been removed by a previous step - otherwise the position would be wrong.
-  irpos<-grep("193",columns)
-  cellevents<-cellevents$Events[irpos]
-  kcellevents <-round(cellevents/1000,0)
+  irpos <- grep("193",columns)
+  cellevents <- sum(FCSDATA[,irpos]!=0)
+  kcellevents <- round(cellevents/1000,0)
 }
 
 
